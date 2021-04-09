@@ -88,7 +88,7 @@ router.route('/').get(function(req,res){
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
 // 리스트사용자페이지 연결
-router.route('/process/listuser').post(function(req,res){
+router.route('/process/listuser').get(function(req,res){
     console.log('/process/listuser 호출됨');
     if(pool) {
         allUser(function(err, result){
@@ -105,12 +105,16 @@ router.route('/process/listuser').post(function(req,res){
                 console.dir(result);
                 //사용자리스트를 브라우저화면에 뿌려줌
                 res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<style>table{border:1px solid black;border-collapse:collapse} td{border:1px solid black;padding:10px;}</style>');
                 res.write('<h2>사용자 리스트</h2>');
-                res.write('<table style="border:1px solid black">');
+                res.write('<table>');
+                res.write('<tr><td>번호</td><td>아이디</td><td>이름</td><td>나이</td></tr>')
                 for(var i=0; i<result.length; i++) {
-                    res.write('<tr><td>'+i+'</td><td>'+result[i].id+'</td><td>'+result[i].name+'</td></tr>');
+                    res.write('<tr><td>'+i+'</td><td>'+result[i].id+'</td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
                 }
                 res.write('</table>');
+                res.write('<a href="/public/adduser2.html">신규등록</a>');
+                res.write('  <a href="/">메인화면</a>');
                 res.end();
             }else{
                 res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
@@ -160,6 +164,17 @@ var allUser = function(callback) {
     });
 };
 
+// 사용자 등록 라우터
+router.route('/process/adduser').post(function(req,res){
+    console.log('/process/adduser 호출된.');
+    // html 넘어온 데이터를 req받아서 처리(아래)
+    var paramId = req.body.id || req.query.id;
+    var paramPassword = req.body.password || req.query.password;
+    var paramName = req.body.name || req.query.name;
+    var paramAge = req.body.age || req.query.age;
+    console.log('요청 파라미터: '+paramId+','+paramPassword+','+paramName+','+paramAge);
+    return;
+});
 
 // 라우터 /를 기본설정
 app.use('/',router);
