@@ -87,7 +87,78 @@ router.route('/').get(function(req,res){
     res.status(200);
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
-
+// 리스트사용자페이지 연결
+router.route('/process/listuser').post(function(req,res){
+    console.log('/process/listuser 호출됨');
+    if(pool) {
+        allUser(function(err, result){
+            if(err) {
+                console.error('사용자 리스트 조회 중 에러 발생 : '+err.stack);
+                //에러상황을 브라우저에 출려함.
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 리스트 조회 중 에러 발생</h2>');
+                res.write('<p>'+err.stack+'</p>');
+                res.end();
+                return;
+            }
+            if(result) {
+                console.dir(result);
+                //사용자리스트를 브라우저화면에 뿌려줌
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 리스트</h2>');
+                res.write('<table style="border:1px solid black">');
+                for(var i=0; i<result.length; i++) {
+                    res.write('<tr><td>'+i+'</td><td>'+result[i].id+'</td><td>'+result[i].name+'</td></tr>');
+                }
+                res.write('</table>');
+                res.end();
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>조회된 값이 없습니다.</h2>');
+                res.write('<a href="/">이전화면으로</a>');
+                res.end();
+            }
+        });
+    }else{
+        //pool이 false일때
+        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+        res.write('<h2>데이터베이스 연결 실패.</h2>');
+        res.end();
+    }
+});
+// 리스트사용자 DAO처리 함수
+var allUser = function(callback) {
+    console.log('allUser함수형변수가 호출됨: ');
+    pool.getConnection(function(err, conn){
+      if(err) {
+          if(conn) {
+              conn.release();//기존커넥션을 연결해제.
+          }
+          callback(err, null);
+          return;
+      }  
+      console.log('데이터베이스 연결 스레드 아이디: '+ conn.threadId);
+      var columns = ['id','name','age'];
+      var tablename = 'users';
+      //SQL문을 실행 preparedStatement 미리정의된 SQL문
+      var exec = conn.query("select ?? from ??",[columns,tablename],function(err,rows){
+        conn.release();//연결해제.
+        console.log('실행 대상 SQL : '+ exec.sql);
+        if(rows.length > 0) {
+            console.log('사용자 리스트 있음');
+            callback(null, rows);//result변수에 들어가는 값이됨.
+        }else{
+            console.log('사용자 리스트 없음.');
+            callback(null,null);
+        }
+      });
+      conn.on('error', function(err){
+          console('데이터베이스 쿼리 에러가 발생 되었습니다.');
+          console.dir(err);
+          callback(err,null);
+      });
+    });
+};
 
 
 // 라우터 /를 기본설정
