@@ -18,6 +18,7 @@ var bodyParser = require('body-parser')
 // Mysql 데이터베이스를 사용할 수 있도록 하는 모듈 불러오기
 var mysql = require('mysql');
 const { callbackify } = require('util');
+const { router } = require('./app');
 
 // Mysql 데이터베이스 연결 설정
 var pool = mysql.createPool({
@@ -39,17 +40,34 @@ app.set('port', process.env.PORT || 3000);
 app.use('/pulbic', static(path.join(__dirname,'public')));
 
 // 데이터베이스 커넥션 확인
-//if(pool) {
-    pool.getConnection(function(err, conn){
+if(pool) {
+    pool.getConnection(function(err,conn){
         if(err) {
+            console.log("데이버베이스 pool에러");
             if(conn) {
+                console.log("conn 해제");
                 conn.release();//연결이 있다면 해제;
             }
             return;
         }
+        conn.query("select * from users");
         conn.on('error',function(err){
             console.log('데이터베이스 연결 시 에러가 발생했습니다.');
             console.dir(err);
+            return;
         });
+        console.log('데이터베이스 연결이 정상 입니다.');
     });
-//}
+}
+
+// 라우팅 시작(URL매핑 스프링의 컨트롤러)
+var router = express.Router(); //URL매핑 객체생성
+// 라우터 객체 등록
+app.use('/',router);
+
+// 초기페이지 연결
+router.route('/').get(function(req,res){
+    res.status(200);
+    res.sendFile(path.join(__dirname,'public','listuser2.html'));
+});
+
