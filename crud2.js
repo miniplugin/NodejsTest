@@ -23,6 +23,7 @@ var expressSession = require("express-session");
 
 // Mysql 데이터베이스를 사용할 수 있도록 하는 모듈 불러오기
 var mysql = require('mysql');
+const { callbackify } = require('util');
 
 // Mysql 데이터베이스 연결 설정
 var pool = mysql.createPool({
@@ -114,6 +115,7 @@ router.route('/process/listuser').get(function(req,res){
                 }
                 res.write('</table>');
                 res.write('<a href="/public/adduser2.html">신규등록</a>');
+                res.write('  <a href="/public/login2.html">로그인</a>');
                 res.write('  <a href="/">메인화면</a>');
                 res.end();
             }else{
@@ -176,12 +178,32 @@ router.route('/process/adduser').post(function(req,res){
     if(pool) {
         addUser(paramId,paramName,paramAge,paramPassword, function(err, result){
             if(err) {
-                
+                console.error('사용자 추가중 에러 발생: '+ err.stack);
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 추가 중 에러가 발생 되었습니다.</h2>');
+                res.write(err.stack);
+                res.write('<a href="/public/adduser2.html">이전화면으로</a>');
+                res.end();
+                return;
+            }
+            if(result) {
+                console.dir(result);
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 추가 성공</h2>');
+                res.write('<br><a href="/public/listuser2.html">사용자리스트</a>');
+                res.write('<br><a href="/public/login2.html">로그인</a>');
+                res.end();
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 추가 실패</h2>');
+                res.write('<br><a href="/public/listuser2.html">사용자리스트</a>');
+                res.write('<br><a href="/public/adduser2.html">사용자등록</a>');
+                res.end();
             }
         });
     }
 });
-//사용자 추가 쿼리실행-함수형 변수
+//사용자 추가 DAO쿼리실행-함수형 변수
 var addUser = function(id, name, age, password, callback) {
     console.log('addUser함수형변수가 호출됨 : ');
     pool.getConnection(function(err, conn){
@@ -206,6 +228,28 @@ var addUser = function(id, name, age, password, callback) {
             }
             callback(null, result);
         });
+    });
+}
+
+//로그인 process라우터 설정
+router.route('/process/login').post(function(req,res){
+    console.log('/process/login 호출됨: ');
+    var paramId = req.body.id;
+    var paramPassword = req.body.password;
+    if(pool) {
+        authUser(paramId, paramPassword, function(err, result){});
+    }
+});
+// 로그인 DAO처리(아래)
+var authUser = function(id, password, callback) {
+    console.log('authUser 함수형변수 호출: ');
+    pool.getConnection(function(err, conn){
+        if(err) {
+            if(conn) {
+                conn.release();//에러발생시 기존 커넥션 해제
+            }
+            callback(err, null);
+        }
     });
 }
 
