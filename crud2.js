@@ -82,6 +82,7 @@ router.route('/').get(function(req,res){
 });
 // 뷰페이지 연결
 router.route('/process_form/updateusers').get(function(req,res){
+    var jsonData;//html로 보낼 객체 생성
     if(pool) {
         //console.log("디버그 id = "+ req.query.id);
         viewUser(req.query.id, function(err, result){
@@ -92,12 +93,20 @@ router.route('/process_form/updateusers').get(function(req,res){
                 res.write(err.stack);
                 res.end();
             }
-            if(result) {
+            if(result[0]) {
                 console.log(result[0]);
+                //jsonData = JSON.stringify(result[0]); //객체를 Json데이터로 변경필요X
+                //console.log("디버그 jsonData: "+ jsonData);
+                res.render(__dirname +'/views/updateuser2', result[0] );
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<script>alert("조회된 값이 없습니다.");history.back();</script>');
+                res.end();
             }
+            
         });
     }
-    res.render(__dirname +'/views/updateuser2', {'data':result[0]} );
+    
 });
 //뷰 페이지 DAO 처리
 var viewUser = function(id, callback) {
