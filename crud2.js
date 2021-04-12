@@ -24,6 +24,7 @@ var expressSession = require("express-session");
 // Mysql 데이터베이스를 사용할 수 있도록 하는 모듈 불러오기
 var mysql = require('mysql');
 const { callbackify } = require('util');
+const { join } = require('path');
 
 // Mysql 데이터베이스 연결 설정
 var pool = mysql.createPool({
@@ -88,6 +89,11 @@ router.route('/').get(function(req,res){
     res.status(200);
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
+// 뷰페이지 연결
+router.route('/process_form/update').get(function(req,res){
+    res.status(200);
+    res.sendFile(path,join(__dirname,'public','updateuser2.html'));
+});
 // 리스트사용자페이지 연결
 router.route('/process/listuser').get(function(req,res){
     console.log('/process/listuser 호출됨');
@@ -111,7 +117,7 @@ router.route('/process/listuser').get(function(req,res){
                 res.write('<table>');
                 res.write('<tr><td>번호</td><td>아이디</td><td>이름</td><td>나이</td></tr>')
                 for(var i=0; i<result.length; i++) {
-                    res.write('<tr><td>'+i+'</td><td>'+result[i].id+'</td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
+                    res.write('<tr><td>'+i+'</td><td><a href="/process_form/update">'+result[i].id+'</a></td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
                 }
                 res.write('</table>');
                 res.write('<a href="/public/adduser2.html">신규등록</a>');
