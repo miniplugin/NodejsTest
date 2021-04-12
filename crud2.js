@@ -80,6 +80,42 @@ router.route('/').get(function(req,res){
     res.status(200);
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
+// 삭제 DAO 처리
+router.route('/process/deleteuser').post(function(req,res) {
+    if(pool) {
+        pool.getConnection(function(err, conn) {
+            if(err) {
+                conn.release();
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write(err.stack);
+                res.end();
+                return;
+            }
+            if(conn) {
+                var paramId = req.body.id;
+                var exec = conn.query("delete from users where id = ?",paramId,function(err, result) {
+                    console.log("디버그: 삭제쿼리 확인 " + exec.sql);
+                    if(err) {
+                        conn.release();
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write(err.stack);
+                        res.end();
+                        return;
+                    }
+                    if(result.changedRows > 0) {
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write('<script>alert("삭제되었습니다.");location.replace("/process_form/listuser");</script>');
+                        res.end();
+                    }else{
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write('<script>alert("삭제된 값이 없습니다.");location.replace("/process_form/updateusers?id='+paramId+'");</script>');
+                        res.end();
+                    }
+                });
+            }
+        });
+    }
+});
 // 업데이트 DAO 처리
 router.route('/process/updateuser').post(function(req,res) {
     if(pool) {
@@ -105,11 +141,18 @@ router.route('/process/updateuser').post(function(req,res) {
                         res.end();
                         return;
                     }
-                    console.log("디버그 update결과 : " + exec);
+                    console.log("디버그 update결과 : " + result.changedRows);
                     console.log("디버그 update쿼리 : " + exec.sql);
-                    res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
-                    res.write('<script>alert("수정되었습니다.");location.replace("/process_form/updateusers?id='+paramId+'");</script>');
-                    res.end();
+                    if(result.changedRows > 0) {
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write('<script>alert("수정되었습니다.");location.replace("/process_form/updateusers?id='+paramId+'");</script>');
+                        res.end();
+                    }else{
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write('<script>alert("수정된 값이 없습니다.");location.replace("/process_form/updateusers?id='+paramId+'");</script>');
+                        //res.redirect('/process_form/updateusers?id='+paramId);
+                        //res.end();
+                    }
                 });
             }
         });
