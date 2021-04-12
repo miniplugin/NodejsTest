@@ -5,15 +5,14 @@
  * 사용자등록: http://localhost:3000/public/adduser2.html
  */
 // Express 프레임워크 기본 모듈들 불러오기
-var express = require('express')
-, http = require('http')
-, path = require('path');
+var express = require('express');
+var http = require('http');
+var path = require('path');
 
 // Express용 미들웨어 모듈 불러오기
-var bodyParser = require('body-parser')
-, cookieParser = require('cookie-parser')
-, static = require('serve-static')
-, errorHandler = require('errorhandler');
+var bodyParser = require('body-parser');
+var static = require('serve-static');
+var errorHandler = require('errorhandler');
 
 //에러 핸들러 모듈 사용
 var expressErrorHandler = require('express-error-handler');
@@ -23,8 +22,6 @@ var expressSession = require("express-session");
 
 // Mysql 데이터베이스를 사용할 수 있도록 하는 모듈 불러오기
 var mysql = require('mysql');
-const { callbackify } = require('util');
-const { join } = require('path');
 
 // Mysql 데이터베이스 연결 설정
 var pool = mysql.createPool({
@@ -42,6 +39,10 @@ var app = express();
 // 기본환경설정 env 들어있는 port정보 또는 지정한 3000 웹서버 포트 생성
 app.set('port', process.env.PORT || 3000);
 
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 //body-parser에서 form-urlencoding 설정
 app.use(bodyParser.urlencoded({extended:false}));
 //body-parser에서 json파싱설정
@@ -49,16 +50,6 @@ app.use(bodyParser.json());
 
 // public 폴더를 static 콘텐츠 공간으로 생성
 app.use('/public', static(path.join(__dirname,'public')));
-
-// 쿠기파서 설정
-app.use(cookieParser());
-
-//세션 설정
-app.use(expressSession({
-    secret:'my key',
-    resave:true,
-    saveUninitialized:true
-}));
 
 // 데이터베이스 커넥션 확인
 if(pool) {
@@ -90,10 +81,24 @@ router.route('/').get(function(req,res){
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
 // 뷰페이지 연결
-router.route('/process_form/update').get(function(req,res){
-    res.status(200);
-    res.sendFile(path,join(__dirname,'public','updateuser2.html'));
+router.route('/process_form/updateusers').get(function(req,res){
+    if(pool) {
+        viewUser(req.body.id, function(err, result){});
+    }
+    res.render(__dirname +'/views/updateuser2', {id:"admin",name:"아무개",age:"20",password:"1234"} );
 });
+//뷰 페이지 DAO 처리
+var viewUser = function(id, callback) {
+    pool.getConnection(function(err, conn) {
+        if(err) {
+            if(conn) { conn.release(); }
+            callback(err, null);
+            return;
+        }
+        var exec = conn.query("select * from users where id = ?",id, function(err, rows){});
+    });    
+}
+
 // 리스트사용자페이지 연결
 router.route('/process/listuser').get(function(req,res){
     console.log('/process/listuser 호출됨');
@@ -117,7 +122,7 @@ router.route('/process/listuser').get(function(req,res){
                 res.write('<table>');
                 res.write('<tr><td>번호</td><td>아이디</td><td>이름</td><td>나이</td></tr>')
                 for(var i=0; i<result.length; i++) {
-                    res.write('<tr><td>'+i+'</td><td><a href="/process_form/update">'+result[i].id+'</a></td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
+                    res.write('<tr><td>'+i+'</td><td><a href="/process_form/updateusers">'+result[i].id+'</a></td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
                 }
                 res.write('</table>');
                 res.write('<a href="/public/adduser2.html">신규등록</a>');
