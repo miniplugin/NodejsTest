@@ -102,9 +102,9 @@ router.route('/process/deleteuser').post(function(req,res) {
                         res.end();
                         return;
                     }
-                    if(result.changedRows > 0) {
+                    if(result.affectedRows > 0) {
                         res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
-                        res.write('<script>alert("삭제되었습니다.");location.replace("/process_form/listuser");</script>');
+                        res.write('<script>alert("삭제되었습니다.");location.replace("/process/listuser");</script>');
                         res.end();
                     }else{
                         res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});

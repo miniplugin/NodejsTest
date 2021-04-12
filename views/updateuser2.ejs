@@ -45,10 +45,12 @@
         <script>
             var deleteuser = document.getElementById('deleteuser');
             var actionform = document.getElementById('actionform');
-            deleteuser.onclick(function() {
-                actionform.setAttribute("action","/process/deleteuser");
-                actionform.submit();//post방식은 url로 삭제하지 못하고, 반드시 현재폼에서만, 삭제가 가능
-            });
+            deleteuser.onclick = function() {
+                if(confirm("정말로 삭제 하시겠습니까?")) {
+                    actionform.setAttribute("action","/process/deleteuser");
+                    actionform.submit();//post방식은 url로 삭제하지 못하고, 반드시 현재폼에서만, 삭제가 가능
+                }
+            }
         </script>
     </body>
 </html>
