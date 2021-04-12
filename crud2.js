@@ -237,7 +237,31 @@ router.route('/process/login').post(function(req,res){
     var paramId = req.body.id;
     var paramPassword = req.body.password;
     if(pool) {
-        authUser(paramId, paramPassword, function(err, result){});
+        authUser(paramId, paramPassword, function(err, result){
+            if(err) {
+                console.log('사용자 로그인 중 에러가 발생되었습니다.');
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h2>사용자 로그인 중 에러 발생</h2>');
+                res.write('<a href="/public/login2.html">이전화면</a>');
+                res.write('<p>'+err.stack+'</p>');
+                res.end();
+            }
+            if(result) {
+                console.dir(result);
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h1>로그인 성공</h1>');
+                res.write('<div><p>사용자 아이디: '+ result[0].id +'</p></div>');
+                res.write('<div><p>사용자 이름: '+ result[0].name +'</p></div>');
+                res.write('<a href="/">로그아웃</a>');
+                res.end();
+            }else{
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write('<h1>로그인 실패</h1>');
+                res.write('<div><p>아이디와 패스워드를 다시 확인하세요!</p></div>');
+                res.write('<a href="/public/login2.html">다시로그인</a>');
+                res.end();
+            }
+        });
     }
 });
 // 로그인 DAO처리(아래)
@@ -249,7 +273,22 @@ var authUser = function(id, password, callback) {
                 conn.release();//에러발생시 기존 커넥션 해제
             }
             callback(err, null);
+            return;
         }
+        var columns = ['id','name','age'];
+        var tablename = 'users';
+        //SQL 조회쿼리실행
+        var exec = conn.query("select ?? from ?? where id = ? and password = ?",[columns,tablename,id,password], function(err, rows) {
+            conn.release();//쿼리실행 후 커넥션 해제
+            console.log('쿼리 명령어 : '+ exec.sql);
+            if(rows.length>0) {
+                console.log('아이디' + id +', 패스워드 [%s]가 일치하는 사용자 찾음', password);
+                callback(null, rows);
+            }else{
+                console.log('일치하는 사용자를 찾지 못했습니다.');
+                callback(null, null);
+            }
+        });
     });
 }
 
