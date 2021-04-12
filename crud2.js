@@ -1,8 +1,8 @@
 /**
  * 이 JS는 Mysql 데이터베이스 CRUD하는 앱 입니다.
  * 결과 화면 진입점은 http://localhosts:3000/ (사용자 리스트화면)
- * 로그인 : http://localhost:3000/public/login.html
- * 사용자등록: http://localhost:3000/public/adduser.html
+ * 로그인 : http://localhost:3000/public/login2.html
+ * 사용자등록: http://localhost:3000/public/adduser2.html
  */
 // Express 프레임워크 기본 모듈들 불러오기
 var express = require('express')
@@ -131,7 +131,7 @@ router.route('/process/listuser').get(function(req,res){
     }
 });
 // 리스트사용자 DAO처리 함수
-var allUser = function(callback) {
+var allUser = function(callback) { //function(err, result){}
     console.log('allUser함수형변수가 호출됨: ');
     pool.getConnection(function(err, conn){
       if(err) {
@@ -173,8 +173,41 @@ router.route('/process/adduser').post(function(req,res){
     var paramName = req.body.name || req.query.name;
     var paramAge = req.body.age || req.query.age;
     console.log('요청 파라미터: '+paramId+','+paramPassword+','+paramName+','+paramAge);
-    return;
+    if(pool) {
+        addUser(paramId,paramName,paramAge,paramPassword, function(err, result){
+            if(err) {
+                
+            }
+        });
+    }
 });
+//사용자 추가 쿼리실행-함수형 변수
+var addUser = function(id, name, age, password, callback) {
+    console.log('addUser함수형변수가 호출됨 : ');
+    pool.getConnection(function(err, conn){
+        if(err) {
+            if(conn) {
+                conn.release();//에러시 DB커넥션 해제
+            }
+            callback(err, null);
+            return;
+        }
+        //html 파라미터 데이터를 insert쿼리에 사용하기 위해서 객체로 만듬
+        var data = {id:id,name:name,age:age,password:password};//json데이터타입의 객체(배열, 키:밸류)
+        //SQL 문 실행
+        var exec = conn.query('insert into users set ?', data, function(err, result){
+            conn.release();
+            console.log('SQL구문 확인: '+exec.sql);
+            if(err) {
+                console.log('쿼리 에러발생');
+                console.dir(err);
+                callback(err, null);
+                return;
+            }
+            callback(null, result);
+        });
+    });
+}
 
 // 라우터 /를 기본설정
 app.use('/',router);
