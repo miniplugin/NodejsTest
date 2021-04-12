@@ -80,7 +80,42 @@ router.route('/').get(function(req,res){
     res.status(200);
     res.sendFile(path.join(__dirname,'public','listuser2.html'));
 });
-// 뷰페이지 연결
+// 업데이트 DAO 처리
+router.route('/process/updateuser').post(function(req,res) {
+    if(pool) {
+        pool.getConnection(function(err, conn) {
+            if(err) {
+                conn.release();
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write(err.stack);
+                res.end();
+                return;
+            }
+            if(conn) {
+                var paramId = req.body.id;
+                var paramName = req.body.name;
+                var paramAge = req.body.age;
+                var paramPassword = req.body.password;
+                var updateSet = {name:paramName,age:paramAge,password:paramPassword};
+                var exec = conn.query("update users set ? where id = ?",[updateSet, paramId],function(err, result) {
+                    if(err) {
+                        if(conn) { conn.release(); }
+                        res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                        res.write(err.stack);
+                        res.end();
+                        return;
+                    }
+                    console.log("디버그 update결과 : " + exec);
+                    console.log("디버그 update쿼리 : " + exec.sql);
+                    res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                    res.write('<script>alert("수정되었습니다.");location.replace("/process_form/updateusers?id='+paramId+'");</script>');
+                    res.end();
+                });
+            }
+        });
+    }
+});
+// 뷰페이지 연결(업데이트페이지와 같음)
 router.route('/process_form/updateusers').get(function(req,res){
     var jsonData;//html로 보낼 객체 생성
     if(pool) {
