@@ -83,9 +83,21 @@ router.route('/').get(function(req,res){
 // 뷰페이지 연결
 router.route('/process_form/updateusers').get(function(req,res){
     if(pool) {
-        viewUser(req.body.id, function(err, result){});
+        //console.log("디버그 id = "+ req.query.id);
+        viewUser(req.query.id, function(err, result){
+            if(err) {
+                console.error('사용자 뷰 조회 중 에러 발생 : '+err.stack);
+                //에러상황을 브라우저에 출려함.
+                res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
+                res.write(err.stack);
+                res.end();
+            }
+            if(result) {
+                console.log(result[0]);
+            }
+        });
     }
-    res.render(__dirname +'/views/updateuser2', {id:"admin",name:"아무개",age:"20",password:"1234"} );
+    res.render(__dirname +'/views/updateuser2', {'data':result[0]} );
 });
 //뷰 페이지 DAO 처리
 var viewUser = function(id, callback) {
@@ -95,7 +107,18 @@ var viewUser = function(id, callback) {
             callback(err, null);
             return;
         }
-        var exec = conn.query("select * from users where id = ?",id, function(err, rows){});
+        var exec = conn.query("select * from users where id = ?",id, function(err, rows){
+            if(err) {
+                console.log(exec.sql);
+                callback(err, null);
+            }
+            if(rows) {
+                console.log(rows);
+                callback(null, rows);
+            }else{
+                callback(null, null);
+            }
+        });
     });    
 }
 
@@ -122,7 +145,7 @@ router.route('/process/listuser').get(function(req,res){
                 res.write('<table>');
                 res.write('<tr><td>번호</td><td>아이디</td><td>이름</td><td>나이</td></tr>')
                 for(var i=0; i<result.length; i++) {
-                    res.write('<tr><td>'+i+'</td><td><a href="/process_form/updateusers">'+result[i].id+'</a></td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
+                    res.write('<tr><td>'+i+'</td><td><a href="/process_form/updateusers?id='+result[i].id+'">'+result[i].id+'</a></td><td>'+result[i].name+'</td><td>'+result[i].age+'</td></tr>');
                 }
                 res.write('</table>');
                 res.write('<a href="/public/adduser2.html">신규등록</a>');
