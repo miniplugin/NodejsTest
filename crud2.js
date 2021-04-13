@@ -128,7 +128,7 @@ router.route('/process/deleteuser').post(function(req,res) {
                     }
                     if(result.affectedRows > 0) {
                         res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
-                        res.write('<script>alert("삭제되었습니다.");location.replace("/process/listuser");</script>');
+                        res.write('<script>alert("삭제되었습니다.");location.replace("/");</script>');
                         res.end();
                     }else{
                         res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
@@ -338,13 +338,13 @@ router.route('/process/adduser').post(function(req,res){
                 console.dir(result);
                 res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
                 res.write('<h2>사용자 추가 성공</h2>');
-                res.write('<br><a href="/public/listuser2.html">사용자리스트</a>');
+                res.write('<br><a href="/">사용자리스트</a>');
                 res.write('<br><a href="/public/login2.html">로그인</a>');
                 res.end();
             }else{
                 res.writeHead('200',{'Content-Type':'text/html;charset=utf8'});
                 res.write('<h2>사용자 추가 실패</h2>');
-                res.write('<br><a href="/public/listuser2.html">사용자리스트</a>');
+                res.write('<br><a href="/">사용자리스트</a>');
                 res.write('<br><a href="/public/adduser2.html">사용자등록</a>');
                 res.end();
             }

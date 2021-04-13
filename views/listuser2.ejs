@@ -16,16 +16,33 @@
                     <td>번호</td><td>아이디</td><td>이름</td><td>나이</td>
                 </tr>
                 <% if(userList !=null && userList.length > 0) { %>
-                    <tr>
-
-                    </tr>
+                    <% for(var i=0; i<userList.length; i++) { %>
+                        <tr>
+                            <td><%=i%></td>
+                            <td><a href="/process_form/updateusers?id=<%=userList[i].id%>"><%=userList[i].id%></a></td>
+                            <td><%=userList[i].name%></td>
+                            <td><%=userList[i].age%></td>
+                        </tr>
+                    <% } %>
                 <% }else{ %>
                     <tr>
-                        <td colspan="4">조회된 데이터가 없습니다.</td>
+                        <td colspan="4">조회된 데이터가 없습니다!!!</td>
                     </tr>
                 <% } %>
             </table>
-            <input type="submit" value="보기" name="">
+            <br>
+            <input type="button" value="사용자등록" id="btnAddUser">
+            <input type="button" value="로그인" id="btnLogin">
         </form>
+        <script>
+            var btnAddUser = document.getElementById('btnAddUser');
+            var btnLogin = document.getElementById('btnLogin');
+            btnAddUser.onclick = function() {
+                location.replace('/public/adduser2.html');
+            }
+            btnLogin.onclick = function() {
+                location.replace('/public/login2.html');
+            }
+        </script>
     </body>
 </html>
