@@ -3,6 +3,7 @@
  * 결과 화면 진입점은 http://localhosts:3000/ (사용자 리스트화면)
  * 로그인 : http://localhost:3000/public/login2.html
  * 사용자등록: http://localhost:3000/public/adduser2.html
+ * 기술참조: https://junspapa-itdev.tistory.com/9
  */
 // Express 프레임워크 기본 모듈들 불러오기
 var express = require('express');
