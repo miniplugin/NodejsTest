@@ -10,6 +10,28 @@
 - git reset --hard origin/master
 - 결과는 root@goorm:/workspace/iot_c/src(master)# 이렇게 마스터로 나오면 됩니다.
 
+#### 깃 config 기본설정
+
+```
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[remote "origin"]
+	url = https://github.com/miniplugin/NodejsTest.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "master"]
+	remote = origin
+	merge = refs/heads/master
+[user]
+	name = kimilguk
+	email = kimilguk@test.com
+
+```
+
 ```
 ┌───────────────────────────────────────────────┐
                                        _       
